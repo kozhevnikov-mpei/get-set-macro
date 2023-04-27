@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "get-set-macro",
+    "get-set-macro-test"
+]

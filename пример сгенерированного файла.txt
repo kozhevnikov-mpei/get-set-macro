@@ -1,0 +1,245 @@
+#![feature(prelude_import)]
+#[prelude_import]
+use std::prelude::rust_2021::*;
+#[macro_use]
+extern crate std;
+use std::collections::HashSet;
+use get_set_macro::GetSet;
+pub struct Test {
+    field1: String,
+    field2: i32,
+    labels: HashSet<String>,
+    string: String,
+    field3: i32,
+}
+impl Default for Test {
+    fn default() -> Self {
+        Self {
+            field2: Default::default(),
+            field3: Default::default(),
+            field1: Default::default(),
+            string: Default::default(),
+            labels: Default::default(),
+        }
+    }
+}
+pub enum TestInputType {
+    field2(i32),
+    field3(i32),
+    field1(String),
+    string(String),
+    labels(HashSet<String>),
+}
+impl TryFrom<(&'static str, String)> for TestInputType {
+    type Error = String;
+    fn try_from(value: (&'static str, String)) -> Result<Self, Self::Error> {
+        match value.0 {
+            "field2" => Err("Wrong type: got i32 when expected String".to_string()),
+            "field3" => Err("Wrong type: got i32 when expected String".to_string()),
+            "field1" => Ok(TestInputType::field1(value.1)),
+            "string" => Ok(TestInputType::string(value.1)),
+            "labels" => {
+                Err("Wrong type: got HashSet<String> when expected String".to_string())
+            }
+            field => {
+                Err({
+                    let res = ::alloc::fmt::format(
+                        format_args!("Unknown field {0}", field),
+                    );
+                    res
+                })
+            }
+        }
+    }
+}
+impl TryFrom<TestInputType> for String {
+    type Error = String;
+    fn try_from(value: TestInputType) -> Result<Self, Self::Error> {
+        match value {
+            TestInputType::field2(_) => {
+                Err(
+                    "Wrong type: TestInputType contains String when expected i32"
+                        .to_string(),
+                )
+            }
+            TestInputType::field3(_) => {
+                Err(
+                    "Wrong type: TestInputType contains String when expected i32"
+                        .to_string(),
+                )
+            }
+            TestInputType::field1(inner) => Ok(inner),
+            TestInputType::string(inner) => Ok(inner),
+            TestInputType::labels(_) => {
+                Err(
+                    "Wrong type: TestInputType contains String when expected HashSet<String>"
+                        .to_string(),
+                )
+            }
+        }
+    }
+}
+impl TryFrom<(&'static str, HashSet<String>)> for TestInputType {
+    type Error = String;
+    fn try_from(value: (&'static str, HashSet<String>)) -> Result<Self, Self::Error> {
+        match value.0 {
+            "field2" => {
+                Err("Wrong type: got i32 when expected HashSet<String>".to_string())
+            }
+            "field3" => {
+                Err("Wrong type: got i32 when expected HashSet<String>".to_string())
+            }
+            "field1" => {
+                Err("Wrong type: got String when expected HashSet<String>".to_string())
+            }
+            "string" => {
+                Err("Wrong type: got String when expected HashSet<String>".to_string())
+            }
+            "labels" => Ok(TestInputType::labels(value.1)),
+            field => {
+                Err({
+                    let res = ::alloc::fmt::format(
+                        format_args!("Unknown field {0}", field),
+                    );
+                    res
+                })
+            }
+        }
+    }
+}
+impl TryFrom<TestInputType> for HashSet<String> {
+    type Error = String;
+    fn try_from(value: TestInputType) -> Result<Self, Self::Error> {
+        match value {
+            TestInputType::field2(_) => {
+                Err(
+                    "Wrong type: TestInputType contains HashSet<String> when expected i32"
+                        .to_string(),
+                )
+            }
+            TestInputType::field3(_) => {
+                Err(
+                    "Wrong type: TestInputType contains HashSet<String> when expected i32"
+                        .to_string(),
+                )
+            }
+            TestInputType::field1(_) => {
+                Err(
+                    "Wrong type: TestInputType contains HashSet<String> when expected String"
+                        .to_string(),
+                )
+            }
+            TestInputType::string(_) => {
+                Err(
+                    "Wrong type: TestInputType contains HashSet<String> when expected String"
+                        .to_string(),
+                )
+            }
+            TestInputType::labels(inner) => Ok(inner),
+        }
+    }
+}
+impl TryFrom<(&'static str, i32)> for TestInputType {
+    type Error = String;
+    fn try_from(value: (&'static str, i32)) -> Result<Self, Self::Error> {
+        match value.0 {
+            "field2" => Ok(TestInputType::field2(value.1)),
+            "field3" => Ok(TestInputType::field3(value.1)),
+            "field1" => Err("Wrong type: got String when expected i32".to_string()),
+            "string" => Err("Wrong type: got String when expected i32".to_string()),
+            "labels" => {
+                Err("Wrong type: got HashSet<String> when expected i32".to_string())
+            }
+            field => {
+                Err({
+                    let res = ::alloc::fmt::format(
+                        format_args!("Unknown field {0}", field),
+                    );
+                    res
+                })
+            }
+        }
+    }
+}
+impl TryFrom<TestInputType> for i32 {
+    type Error = String;
+    fn try_from(value: TestInputType) -> Result<Self, Self::Error> {
+        match value {
+            TestInputType::field2(inner) => Ok(inner),
+            TestInputType::field3(inner) => Ok(inner),
+            TestInputType::field1(_) => {
+                Err(
+                    "Wrong type: TestInputType contains i32 when expected String"
+                        .to_string(),
+                )
+            }
+            TestInputType::string(_) => {
+                Err(
+                    "Wrong type: TestInputType contains i32 when expected String"
+                        .to_string(),
+                )
+            }
+            TestInputType::labels(_) => {
+                Err(
+                    "Wrong type: TestInputType contains i32 when expected HashSet<String>"
+                        .to_string(),
+                )
+            }
+        }
+    }
+}
+impl Test {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn get_val<T>(&self, field_name: &'static str) -> Result<T, String>
+    where
+        T: TryFrom<TestInputType, Error = String>,
+    {
+        let enum_value = match field_name {
+            "field2" => TestInputType::try_from(("field2", self.field2.clone())),
+            "field3" => TestInputType::try_from(("field3", self.field3.clone())),
+            "field1" => TestInputType::try_from(("field1", self.field1.clone())),
+            "string" => TestInputType::try_from(("string", self.string.clone())),
+            "labels" => TestInputType::try_from(("labels", self.labels.clone())),
+            _ => {
+                return Err({
+                    let res = ::alloc::fmt::format(
+                        format_args!("Unknown field {0}", field_name),
+                    );
+                    res
+                });
+            }
+        }?;
+        enum_value.try_into()
+    }
+    pub fn set_val<T>(
+        &mut self,
+        field_name: &'static str,
+        value: T,
+    ) -> Result<(), String>
+    where
+        TestInputType: TryFrom<(&'static str, T), Error = String>,
+    {
+        let enum_value = TestInputType::try_from((field_name, value))?;
+        match (field_name, enum_value) {
+            ("field2", TestInputType::field2(inner)) => self.field2 = inner,
+            ("field3", TestInputType::field3(inner)) => self.field3 = inner,
+            ("field1", TestInputType::field1(inner)) => self.field1 = inner,
+            ("string", TestInputType::string(inner)) => self.string = inner,
+            ("labels", TestInputType::labels(inner)) => self.labels = inner,
+            _ => {
+                return Err({
+                    let res = ::alloc::fmt::format(
+                        format_args!("Can\'t set {0}", field_name),
+                    );
+                    res
+                });
+            }
+        };
+        Ok(())
+    }
+}
+fn main() {
+    let test = Test::new();
+}
